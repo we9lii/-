@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>حاسبة التوفير بالطاقة الشمسية</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap');
+        
+        * {
+            font-family: 'Cairo', sans-serif;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.8s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .counter {
+            font-weight: 700;
+            color: #10b981;
+        }
+        
+        .hover-gradient {
+            transition: all 0.3s ease;
+        }
+        
+        .hover-gradient:hover {
+            background: linear-gradient(135deg, #f97316 0%, #22c55e 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        
+        .card-shadow {
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .success-message {
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .animated-button {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .animated-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s;
+        }
+        
+        .animated-button:hover::before {
+            left: 100%;
+        }
+        
+        .animated-button {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(251, 191, 36, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(251, 191, 36, 0); }
+        }
+        
+        .reset-button {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            transition: all 0.3s ease;
+        }
+        
+        .reset-button:hover {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(239, 68, 68, 0.3);
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+        }
+        
+        .smooth-transition {
+            transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .slide-up {
+            animation: slideUp 1s ease-out forwards;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .hero-fade-out {
+            animation: heroFadeOut 0.8s ease-in-out forwards;
+        }
+        
+        @keyframes heroFadeOut {
+            from {
+                opacity: 1;
+                transform: scale(1);
+            }
+            to {
+                opacity: 0.3;
+                transform: scale(0.95);
+            }
+        }
+        
+        .calculator-highlight {
+            animation: calculatorHighlight 1.5s ease-in-out;
+        }
+        
+        @keyframes calculatorHighlight {
+            0% {
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: 0 20px 60px rgba(251, 191, 36, 0.4);
+                transform: scale(1.02);
+            }
+            100% {
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    <!-- Hero Section -->
+    <section class="bg-gray-900 min-h-screen flex items-center justify-center relative overflow-hidden">
+        <div class="text-center text-white px-6 max-w-4xl relative z-10">
+            <h1 class="text-5xl md:text-7xl font-bold mb-6 leading-tight bg-gradient-to-r from-yellow-400 via-orange-500 to-green-500 bg-clip-text text-transparent drop-shadow-lg">
+                لا تدفع أكثر… وفّر مع الطاقة الشمسية ⚡
+            </h1>
+            <p class="text-xl md:text-2xl mb-8 text-gray-300">
+                حاسبة بسيطة توضّح لك كل شيء: فاتورة أقل، توفير أكبر، مستقبل أذكى.
+            </p>
+            <button onclick="scrollToCalculator()" class="animated-button relative overflow-hidden bg-gradient-to-r from-yellow-400 via-orange-500 to-green-500 text-white px-12 py-5 rounded-full text-xl font-bold shadow-2xl transform transition-all duration-300 hover:scale-110 hover:shadow-3xl">
+                <span class="relative z-10">إحســـب</span>
+                <div class="absolute inset-0 bg-gradient-to-r from-green-500 via-orange-500 to-yellow-400 opacity-0 transition-opacity duration-300 hover:opacity-100"></div>
+            </button>
+            
+            <div class="mt-6">
+                <button onclick="skipToContact()" class="bg-gray-700 hover:bg-gray-600 text-white px-10 py-4 rounded-full text-lg font-semibold transition-all duration-300 border border-gray-600 hover:border-orange-500 shadow-lg transform hover:scale-105">
+                    تعبئة البيانـات
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Calculator Section -->
+    <section id="calculator" class="py-16 px-6 relative bg-gray-900">
+        <div class="max-w-2xl mx-auto">
+            <div class="bg-gray-800 rounded-3xl p-8 card-shadow">
+                <h2 class="text-3xl font-bold text-center mb-8 text-white">
+                    مبلـغ فاتـورتك الشهريـة
+                </h2>
+                
+                <div class="text-center">
+                    <div class="mb-6">
+                        <input type="number" id="monthlyBill" 
+                               class="text-center text-2xl font-semibold border-2 border-gray-600 bg-gray-700 text-white rounded-xl px-6 py-4 w-48 focus:border-orange-500 focus:outline-none transition-all duration-300">
+                        <span class="text-xl font-semibold text-gray-300 mr-2">ريال</span>
+                    </div>
+                    <p class="text-xs text-gray-400 mb-6">
+                        تسعيرة الكهرباء في السعودية: 0.18 ريال لأول 600 كيلو واط، 0.30 ريال للاستهلاك الإضافي
+                    </p>
+                    
+                    <button onclick="calculateSavings()" class="animated-button bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-8 py-4 rounded-xl text-xl font-semibold hover-gradient shadow-lg transform transition-all duration-300 hover:scale-110">
+                        إحســــب
+                    </button>
+                </div>
+            </div>
+            
+
+        </div>
+    </section>
+
+    <!-- Results Section -->
+    <section id="results" class="py-16 px-6 hidden relative bg-gray-900">
+        <div class="max-w-6xl mx-auto">
+            <div class="mb-12">
+            </div>
+            
+            <!-- Interactive Chart -->
+            <div class="bg-gray-800 rounded-2xl p-6 mb-12 card-shadow">
+                <h3 class="text-2xl font-bold text-center mb-6 text-white">رسم بياني للتوفير عبر السنوات</h3>
+                <div class="chart-container">
+                    <canvas id="savingsChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+                <!-- Current Bill -->
+                <div class="bg-gray-800 rounded-2xl p-6 card-shadow text-center hover:scale-105 transition-all duration-300">
+                    <div class="text-4xl mb-3">💸</div>
+                    <h3 class="text-lg font-semibold text-gray-300 mb-2">فاتورتك الحالية</h3>
+                    <div class="text-3xl font-bold text-red-400" id="currentBill">0 ريال</div>
+                </div>
+                
+                <!-- Monthly Savings -->
+                <div class="bg-gray-800 rounded-2xl p-6 card-shadow text-center hover:scale-105 transition-all duration-300">
+                    <div class="text-4xl mb-3">💰</div>
+                    <h3 class="text-lg font-semibold text-gray-300 mb-2">توفيرك الشهري</h3>
+                    <div class="text-3xl font-bold counter" id="monthlySavings">0 ريال</div>
+                </div>
+                
+                <!-- Yearly Savings -->
+                <div class="bg-gray-800 rounded-2xl p-6 card-shadow text-center hover:scale-105 transition-all duration-300">
+                    <div class="text-4xl mb-3">📅</div>
+                    <h3 class="text-lg font-semibold text-gray-300 mb-2">توفيرك السنوي</h3>
+                    <div class="text-3xl font-bold counter" id="yearlySavings">0 ريال</div>
+                </div>
+                
+                <!-- 5 Years -->
+                <div class="bg-gray-800 rounded-2xl p-6 card-shadow text-center hover:scale-105 transition-all duration-300">
+                    <div class="text-4xl mb-3">📈</div>
+                    <h3 class="text-lg font-semibold text-gray-300 mb-2">خلال 5 سنوات</h3>
+                    <div class="text-3xl font-bold counter" id="fiveYears">0 ريال</div>
+                </div>
+                
+                <!-- 10 Years -->
+                <div class="bg-gray-800 rounded-2xl p-6 card-shadow text-center hover:scale-105 transition-all duration-300">
+                    <div class="text-4xl mb-3">📊</div>
+                    <h3 class="text-lg font-semibold text-gray-300 mb-2">خلال 10 سنوات</h3>
+                    <div class="text-3xl font-bold counter" id="tenYears">0 ريال</div>
+                </div>
+                
+                <!-- 20 Years -->
+                <div class="bg-gray-800 rounded-2xl p-6 card-shadow text-center hover:scale-105 transition-all duration-300">
+                    <div class="text-4xl mb-3">🏆</div>
+                    <h3 class="text-lg font-semibold text-gray-300 mb-2">خلال 20 سنة</h3>
+                    <div class="text-3xl font-bold counter" id="twentyYears">0 ريال</div>
+                </div>
+            </div>
+            
+            <!-- System Size -->
+            <div class="bg-gradient-to-r from-green-400 to-blue-500 rounded-2xl p-8 text-white text-center mb-8">
+                <h3 class="text-2xl font-bold mb-4">المنظومة الشمسية المقترحة ⚡</h3>
+                <div class="text-5xl font-bold" id="systemSize">0 kW</div>
+                <div class="text-lg mt-2 opacity-90">قوة مثالية لاحتياجاتك</div>
+            </div>
+            
+            <!-- Marketing Text -->
+            <div class="text-center bg-gray-800 rounded-2xl p-8 card-shadow mb-8">
+                <p class="text-2xl font-semibold text-white">
+                    طاقة نظيفة اليوم تعني مدخرات أكبر غداً - استثمار ذكي لمستقبل مستدام
+                </p>
+            </div>
+            
+            <!-- Reset Button -->
+            <div class="text-center">
+                <button onclick="resetCalculator()" class="reset-button text-white px-8 py-4 rounded-xl text-xl font-semibold shadow-lg">
+                    إعادة الحساب
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Form -->
+    <section id="contact" class="py-16 px-6 bg-gray-900">
+        <div class="max-w-2xl mx-auto">
+            <div class="bg-gray-800 rounded-3xl p-8 card-shadow">
+                <h2 class="text-3xl font-bold text-center mb-8 text-white">
+                    خلنا نتواصل معك ونصمم لك الحل المناسب 🌟
+                </h2>
+                
+                <form id="contactForm" class="space-y-6">
+                    <div>
+                        <label class="block text-lg font-semibold text-gray-300 mb-2">الاسم الكامل</label>
+                        <input type="text" required class="w-full border-2 border-gray-600 bg-gray-700 text-white rounded-xl px-4 py-3 focus:border-orange-500 focus:outline-none">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-lg font-semibold text-gray-300 mb-2">رقم الجوال</label>
+                        <input type="tel" required class="w-full border-2 border-gray-600 bg-gray-700 text-white rounded-xl px-4 py-3 focus:border-orange-500 focus:outline-none">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-lg font-semibold text-gray-300 mb-2">البريد الإلكتروني (اختياري)</label>
+                        <input type="email" class="w-full border-2 border-gray-600 bg-gray-700 text-white rounded-xl px-4 py-3 focus:border-orange-500 focus:outline-none">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-lg font-semibold text-gray-300 mb-2">المجال</label>
+                        <select required class="w-full border-2 border-gray-600 bg-gray-700 text-white rounded-xl px-4 py-3 focus:border-orange-500 focus:outline-none">
+                            <option value="">اختر المجال</option>
+                            <option value="residential">🏠 سكني</option>
+                            <option value="agricultural">🌱 زراعي</option>
+                            <option value="industrial">🏭 صناعي</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-lg font-semibold text-gray-300 mb-2">المنطقة</label>
+                        <select required class="w-full border-2 border-gray-600 bg-gray-700 text-white rounded-xl px-4 py-3 focus:border-orange-500 focus:outline-none">
+                            <option value="">اختر المنطقة</option>
+                            <option value="riyadh">منطقة الرياض</option>
+                            <option value="makkah">منطقة مكة المكرمة</option>
+                            <option value="madinah">منطقة المدينة المنورة</option>
+                            <option value="qassim">منطقة القصيم</option>
+                            <option value="eastern">المنطقة الشرقية</option>
+                            <option value="asir">منطقة عسير</option>
+                            <option value="tabuk">منطقة تبوك</option>
+                            <option value="hail">منطقة حائل</option>
+                            <option value="northern">منطقة الحدود الشمالية</option>
+                            <option value="jazan">منطقة جازان</option>
+                            <option value="najran">منطقة نجران</option>
+                            <option value="bahah">منطقة الباحة</option>
+                            <option value="jouf">منطقة الجوف</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-lg font-semibold text-gray-300 mb-2">المدينة</label>
+                        <input type="text" placeholder="أدخل اسم المدينة" class="w-full border-2 border-gray-600 bg-gray-700 text-white rounded-xl px-4 py-3 focus:border-orange-500 focus:outline-none">
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-gradient-to-r from-orange-500 to-green-500 text-white py-4 rounded-xl text-xl font-semibold hover-gradient shadow-lg">
+                        أرسل بياناتي الآن
+                    </button>
+                </form>
+                
+                <div id="successMessage" class="hidden mt-6 p-4 bg-green-800 border border-green-600 text-green-200 rounded-xl text-center success-message">
+                    تم استلام طلبك ✅ فريقنا بيتواصل معك قريبًا.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        function scrollToCalculator() {
+            // Add fade effect to hero section
+            const heroSection = document.querySelector('section');
+            heroSection.classList.add('hero-fade-out');
+            
+            // Wait a bit then scroll and highlight calculator
+            setTimeout(() => {
+                document.getElementById('calculator').scrollIntoView({ 
+                    behavior: 'smooth',
+                    block: 'center'
+                });
+                
+                // Add highlight effect to calculator after scroll
+                setTimeout(() => {
+                    const calculatorCard = document.querySelector('#calculator .bg-gray-800');
+                    calculatorCard.classList.add('calculator-highlight');
+                    
+                    // Focus on input field with a nice effect
+                    setTimeout(() => {
+                        const input = document.getElementById('monthlyBill');
+                        input.focus();
+                        input.style.transform = 'scale(1.05)';
+                        input.style.transition = 'transform 0.3s ease';
+                        
+                        setTimeout(() => {
+                            input.style.transform = 'scale(1)';
+                        }, 300);
+                    }, 500);
+                }, 800);
+            }, 300);
+        }
+
+
+
+        function skipToContact() {
+            // Scroll directly to contact form
+            document.getElementById('contact').scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'center'
+            });
+            
+            // Add highlight effect to contact form
+            setTimeout(() => {
+                const contactCard = document.querySelector('#contact .bg-gray-800');
+                contactCard.classList.add('calculator-highlight');
+            }, 800);
+        }
+
+        function calculateSavings() {
+            const monthlyBill = parseFloat(document.getElementById('monthlyBill').value);
+            
+            if (!monthlyBill || monthlyBill <= 0) {
+                alert('يرجى إدخال قيمة صحيحة للفاتورة');
+                return;
+            }
+
+            // Calculate consumption in kWh
+            let consumption = 0;
+            if (monthlyBill <= 108) { // 600 kWh * 0.18
+                consumption = monthlyBill / 0.18;
+            } else {
+                consumption = 600 + ((monthlyBill - 108) / 0.30);
+            }
+
+            // Calculate system size (1 kW produces ~150 kWh monthly in Saudi Arabia)
+            const systemSize = Math.ceil(consumption / 150);
+
+            // Calculate savings (70% coverage)
+            const monthlySavings = Math.round(monthlyBill * 0.7);
+            const yearlySavings = monthlySavings * 12;
+            const fiveYearSavings = yearlySavings * 5;
+            const tenYearSavings = yearlySavings * 10;
+            const twentyYearSavings = yearlySavings * 20;
+
+            // Show results
+            document.getElementById('results').classList.remove('hidden');
+            document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+
+            // Create interactive chart
+            createSavingsChart(monthlyBill, monthlySavings);
+
+            // Animate counters
+            animateCounter('currentBill', monthlyBill, 'ريال');
+            animateCounter('monthlySavings', monthlySavings, 'ريال');
+            animateCounter('yearlySavings', yearlySavings, 'ريال');
+            animateCounter('fiveYears', fiveYearSavings, 'ريال');
+            animateCounter('tenYears', tenYearSavings, 'ريال');
+            animateCounter('twentyYears', twentyYearSavings, 'ريال');
+            animateCounter('systemSize', systemSize, 'kW');
+        }
+
+        // Chart utilities
+        const Utils = {
+            CHART_COLORS: {
+                red: 'rgb(255, 99, 132)',
+                orange: 'rgb(255, 159, 64)',
+                yellow: 'rgb(255, 205, 86)',
+                green: 'rgb(75, 192, 192)',
+                blue: 'rgb(54, 162, 235)',
+                purple: 'rgb(153, 102, 255)',
+                grey: 'rgb(201, 203, 207)'
+            },
+            transparentize: function(color, opacity) {
+                const alpha = opacity === undefined ? 0.5 : 1 - opacity;
+                return color.replace('rgb', 'rgba').replace(')', `, ${alpha})`);
+            },
+            numbers: function(config) {
+                const cfg = config || {};
+                const min = cfg.min || 0;
+                const max = cfg.max || 100;
+                const count = cfg.count || 8;
+                const decimals = cfg.decimals || 8;
+                const continuity = cfg.continuity || 1;
+                const dfactor = Math.pow(10, decimals) || 0;
+                const data = [];
+                for (let i = 0; i < count; ++i) {
+                    const value = (Math.random() * (max - min)) + min;
+                    if (Math.random() <= continuity) {
+                        data.push(Math.round(dfactor * value) / dfactor);
+                    } else {
+                        data.push(null);
+                    }
+                }
+                return data;
+            },
+            months: function(config) {
+                const cfg = config || {};
+                const count = cfg.count || 12;
+                const section = cfg.section;
+                const values = [];
+                const months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+                for (let i = 0; i < count; ++i) {
+                    const value = months[Math.floor(i) % months.length];
+                    values.push(value);
+                }
+                return values;
+            }
+        };
+
+        const DATA_COUNT = 5;
+        const NUMBER_CFG = {count: DATA_COUNT, min: 0, max: 100};
+        let savingsChart;
+
+        function generateData() {
+            return Utils.numbers(NUMBER_CFG);
+        }
+
+        const actions = [
+            {
+                name: 'Randomize',
+                handler(chart) {
+                    chart.data.datasets.forEach(dataset => {
+                        dataset.data = generateData();
+                    });
+                    chart.update();
+                }
+            },
+            {
+                name: 'Toggle Doughnut View',
+                handler(chart) {
+                    if (chart.options.cutout) {
+                        chart.options.cutout = 0;
+                    } else {
+                        chart.options.cutout = '50%';
+                    }
+                    chart.update();
+                }
+            }
+        ];
+
+        function createSavingsChart(monthlyBill, monthlySavings) {
+            const ctx = document.getElementById('savingsChart').getContext('2d');
+            
+            // Destroy existing chart if it exists
+            if (savingsChart) {
+                savingsChart.destroy();
+            }
+            
+            const yearlySavings = monthlySavings * 12;
+            const fiveYearSavings = yearlySavings * 5;
+            const tenYearSavings = yearlySavings * 10;
+            const twentyYearSavings = yearlySavings * 20;
+            
+            const labels = ['سنة واحدة', '5 سنوات', '10 سنوات', '20 سنة', 'فاتورتك الحالية'];
+            const data = {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'التوفير بالطاقة الشمسية',
+                        data: [
+                            yearlySavings,
+                            fiveYearSavings,
+                            tenYearSavings,
+                            twentyYearSavings,
+                            monthlyBill * 12
+                        ],
+                        backgroundColor: [
+                            Utils.transparentize(Utils.CHART_COLORS.green, 0.3),
+                            Utils.transparentize(Utils.CHART_COLORS.blue, 0.3),
+                            Utils.transparentize(Utils.CHART_COLORS.yellow, 0.3),
+                            Utils.transparentize(Utils.CHART_COLORS.orange, 0.3),
+                            Utils.transparentize(Utils.CHART_COLORS.red, 0.3),
+                        ],
+                        borderColor: [
+                            Utils.CHART_COLORS.green,
+                            Utils.CHART_COLORS.blue,
+                            Utils.CHART_COLORS.yellow,
+                            Utils.CHART_COLORS.orange,
+                            Utils.CHART_COLORS.red,
+                        ],
+                        borderWidth: 2,
+                        hoverOffset: 10
+                    }
+                ]
+            };
+            
+            savingsChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '50%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#ffffff',
+                                font: {
+                                    family: 'Cairo',
+                                    size: 14
+                                },
+                                padding: 20,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#ffffff',
+                            bodyColor: '#ffffff',
+                            borderColor: '#fbbf24',
+                            borderWidth: 1,
+                            titleFont: {
+                                family: 'Cairo',
+                                size: 16
+                            },
+                            bodyFont: {
+                                family: 'Cairo',
+                                size: 14
+                            },
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.parsed.toLocaleString() + ' ريال';
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        animateRotate: true,
+                        animateScale: true,
+                        duration: 2000,
+                        easing: 'easeInOutQuart'
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+        }
+
+        function animateCounter(elementId, targetValue, suffix) {
+            const element = document.getElementById(elementId);
+            const duration = 2000;
+            const steps = 60;
+            const stepValue = targetValue / steps;
+            let currentValue = 0;
+            
+            const timer = setInterval(() => {
+                currentValue += stepValue;
+                if (currentValue >= targetValue) {
+                    currentValue = targetValue;
+                    clearInterval(timer);
+                }
+                element.textContent = Math.round(currentValue).toLocaleString() + ' ' + suffix;
+            }, duration / steps);
+        }
+
+        function resetCalculator() {
+            // Hide results section
+            document.getElementById('results').classList.add('hidden');
+            
+            // Clear input field
+            document.getElementById('monthlyBill').value = '';
+            
+            // Scroll back to calculator
+            document.getElementById('calculator').scrollIntoView({ behavior: 'smooth' });
+            
+            // Destroy chart if it exists
+            if (savingsChart) {
+                savingsChart.destroy();
+                savingsChart = null;
+            }
+        }
+
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Show success message
+            document.getElementById('successMessage').classList.remove('hidden');
+            
+            // Reset form
+            this.reset();
+            
+            // Hide success message after 5 seconds
+            setTimeout(() => {
+                document.getElementById('successMessage').classList.add('hidden');
+            }, 5000);
+        });
+
+
+    </script>
+
+    <!-- Developer Footer -->
+    <footer class="py-8 bg-gray-800 text-center">
+        <div class="max-w-4xl mx-auto px-6">
+            <img src="https://www2.0zz0.com/2025/09/08/09/321027936.gif" alt="Developer Logo" class="mx-auto mb-4 w-32 h-32 object-contain">
+        </div>
+    </footer>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97be779f665d7898',t:'MTc1NzMzNDczMi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
